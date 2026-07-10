@@ -62,9 +62,9 @@ type adapter struct {
 // callbackMeta stores the context needed to route a callback query back to
 // the original chat session.
 type callbackMeta struct {
-	ChatID  string
-	ChatType bot.ChatType
-	UserID  string
+	ChatID    string
+	ChatType  bot.ChatType
+	UserID    string
 	MessageID string
 }
 

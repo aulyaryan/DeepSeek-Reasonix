@@ -12,10 +12,10 @@ import (
 )
 
 const (
-	pollInterval     = 300 * time.Millisecond // 轮询间隔
-	pollTimeout      = 60                     // Telegram long polling timeout (seconds)
-	pollRetryDelay   = 3 * time.Second        // 出错后重试等待
-	maxTextLength    = 4000                   // Telegram 单条消息最大长度（留 96 字节余量）
+	pollInterval   = 300 * time.Millisecond // 轮询间隔
+	pollTimeout    = 60                     // Telegram long polling timeout (seconds)
+	pollRetryDelay = 3 * time.Second        // 出错后重试等待
+	maxTextLength  = 4000                   // Telegram 单条消息最大长度（留 96 字节余量）
 )
 
 // pollLoop 长轮询 Telegram 获取更新。

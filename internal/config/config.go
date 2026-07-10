@@ -549,10 +549,10 @@ type BotDesktopWatcherConfig struct {
 }
 
 type BotSelfUserIDs struct {
-	QQ        []string `toml:"qq"`
-	Feishu    []string `toml:"feishu"`
-	Weixin    []string `toml:"weixin"`
-	Telegram  []string `toml:"telegram"`
+	QQ       []string `toml:"qq"`
+	Feishu   []string `toml:"feishu"`
+	Weixin   []string `toml:"weixin"`
+	Telegram []string `toml:"telegram"`
 }
 
 type BotControlConfig struct {
@@ -575,24 +575,24 @@ type BotRouteConfig struct {
 
 // BotAllowlist 控制哪些用户可以使用 bot。
 type BotAllowlist struct {
-	Enabled         bool     `toml:"enabled"`
-	AllowAll        bool     `toml:"allow_all"`
-	QQUsers         []string `toml:"qq_users"`
-	FeishuUsers     []string `toml:"feishu_users"`
-	WeixinUsers     []string `toml:"weixin_users"`
-	TelegramUsers   []string `toml:"telegram_users"`
-	QQApprovers     []string `toml:"qq_approvers"`
-	FeishuApprovers []string `toml:"feishu_approvers"`
-	WeixinApprovers []string `toml:"weixin_approvers"`
+	Enabled           bool     `toml:"enabled"`
+	AllowAll          bool     `toml:"allow_all"`
+	QQUsers           []string `toml:"qq_users"`
+	FeishuUsers       []string `toml:"feishu_users"`
+	WeixinUsers       []string `toml:"weixin_users"`
+	TelegramUsers     []string `toml:"telegram_users"`
+	QQApprovers       []string `toml:"qq_approvers"`
+	FeishuApprovers   []string `toml:"feishu_approvers"`
+	WeixinApprovers   []string `toml:"weixin_approvers"`
 	TelegramApprovers []string `toml:"telegram_approvers"`
-	QQAdmins        []string `toml:"qq_admins"`
-	FeishuAdmins    []string `toml:"feishu_admins"`
-	WeixinAdmins    []string `toml:"weixin_admins"`
-	TelegramAdmins  []string `toml:"telegram_admins"`
-	QQGroups        []string `toml:"qq_groups"`
-	FeishuGroups    []string `toml:"feishu_groups"`
-	WeixinGroups    []string `toml:"weixin_groups"`
-	TelegramGroups  []string `toml:"telegram_groups"`
+	QQAdmins          []string `toml:"qq_admins"`
+	FeishuAdmins      []string `toml:"feishu_admins"`
+	WeixinAdmins      []string `toml:"weixin_admins"`
+	TelegramAdmins    []string `toml:"telegram_admins"`
+	QQGroups          []string `toml:"qq_groups"`
+	FeishuGroups      []string `toml:"feishu_groups"`
+	WeixinGroups      []string `toml:"weixin_groups"`
+	TelegramGroups    []string `toml:"telegram_groups"`
 }
 
 type BotPairingConfig struct {
@@ -652,8 +652,8 @@ type WeixinBotConfig struct {
 // TelegramBotConfig Telegram Bot 配置。
 type TelegramBotConfig struct {
 	Enabled          bool            `toml:"enabled"`
-	TokenEnv         string          `toml:"token_env"`          // 环境变量名，如 TG_BOT_TOKEN
-	AllowedUpdates   []string        `toml:"allowed_updates"`    // 允许的更新类型，默认 ["message","callback_query"]
+	TokenEnv         string          `toml:"token_env"`       // 环境变量名，如 TG_BOT_TOKEN
+	AllowedUpdates   []string        `toml:"allowed_updates"` // 允许的更新类型，默认 ["message","callback_query"]
 	Model            string          `toml:"model"`
 	ToolApprovalMode string          `toml:"tool_approval_mode"`
 	WorkspaceRoot    string          `toml:"workspace_root"`
