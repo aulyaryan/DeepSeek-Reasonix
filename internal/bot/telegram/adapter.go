@@ -55,8 +55,7 @@ type adapter struct {
 
 	// callbackData caches mapping from callback query IDs to chat IDs for inline
 	// keyboard approval routing.
-	callbackMu sync.Mutex
-	callbacks  map[string]callbackMeta
+	callbacks map[string]callbackMeta
 }
 
 // callbackMeta stores the context needed to route a callback query back to
@@ -123,15 +122,6 @@ func (a *adapter) SendTyping(ctx context.Context, chatID string) error {
 
 func (a *adapter) Messages() <-chan bot.InboundMessage {
 	return a.msgCh
-}
-
-// botToken 返回处理过的 token（仅用于日志中截断显示）
-func (a *adapter) botTokenPreview() string {
-	token := os.Getenv(a.cfg.TokenEnv)
-	if len(token) > 8 {
-		return token[:4] + "..." + token[len(token)-4:]
-	}
-	return "***"
 }
 
 // isSelfMessage 检查消息是否由 bot 自己发出（用于回声抑制）
