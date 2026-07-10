@@ -10,6 +10,7 @@ import (
 	"reasonix/internal/bot"
 	"reasonix/internal/bot/feishu"
 	"reasonix/internal/bot/qq"
+	"reasonix/internal/bot/telegram"
 	"reasonix/internal/bot/weixin"
 	"reasonix/internal/config"
 )
@@ -29,6 +30,8 @@ func EnabledPlatforms(cfg *config.Config, channels []string) (map[bot.Platform]b
 				enabled[bot.PlatformFeishu] = PlatformConfigured(cfg, bot.PlatformFeishu)
 			case bot.PlatformWeixin:
 				enabled[bot.PlatformWeixin] = PlatformConfigured(cfg, bot.PlatformWeixin)
+			case bot.PlatformTelegram:
+				enabled[bot.PlatformTelegram] = PlatformConfigured(cfg, bot.PlatformTelegram)
 			default:
 				if strings.EqualFold(ch, "lark") {
 					enabled[bot.PlatformFeishu] = PlatformConfigured(cfg, bot.PlatformFeishu)
@@ -42,6 +45,7 @@ func EnabledPlatforms(cfg *config.Config, channels []string) (map[bot.Platform]b
 	enabled[bot.PlatformQQ] = PlatformConfigured(cfg, bot.PlatformQQ)
 	enabled[bot.PlatformFeishu] = PlatformConfigured(cfg, bot.PlatformFeishu)
 	enabled[bot.PlatformWeixin] = PlatformConfigured(cfg, bot.PlatformWeixin)
+	enabled[bot.PlatformTelegram] = PlatformConfigured(cfg, bot.PlatformTelegram)
 	return enabled, warnings
 }
 
@@ -96,6 +100,10 @@ func PlatformConfigured(cfg *config.Config, platform bot.Platform) bool {
 		if cfg.Bot.Weixin.Enabled {
 			return true
 		}
+	case bot.PlatformTelegram:
+		if cfg.Bot.Telegram.Enabled {
+			return true
+		}
 	}
 	for _, conn := range cfg.Bot.Connections {
 		if conn.Enabled && bot.Platform(strings.TrimSpace(conn.Provider)) == platform {
@@ -116,7 +124,7 @@ func ChannelConfigs(connections []config.BotConnectionConfig, includeModel bool,
 		}
 		plat := bot.Platform(strings.TrimSpace(conn.Provider))
 		switch plat {
-		case bot.PlatformQQ, bot.PlatformFeishu, bot.PlatformWeixin:
+		case bot.PlatformQQ, bot.PlatformFeishu, bot.PlatformWeixin, bot.PlatformTelegram:
 		default:
 			continue
 		}
@@ -181,6 +189,9 @@ func ConnectionAccessConfigs(cfg *config.Config) map[string]bot.AccessConfig {
 	out := make(map[string]bot.AccessConfig)
 	if BotAccessActive(cfg.Bot.QQ.Access) {
 		out[string(bot.PlatformQQ)] = botAccessConfig(cfg.Bot.QQ.Access)
+	}
+	if BotAccessActive(cfg.Bot.Telegram.Access) {
+		out[string(bot.PlatformTelegram)] = botAccessConfig(cfg.Bot.Telegram.Access)
 	}
 	for _, conn := range cfg.Bot.Connections {
 		if !conn.Enabled {
@@ -344,6 +355,12 @@ func AdapterBindings(cfg *config.Config, enabled map[bot.Platform]bool, feishuDo
 			weixinCfg.TokenEnv = firstNonEmptyString(strings.TrimSpace(conn.Credential.TokenEnv), weixinCfg.TokenEnv)
 			bindings = append(bindings, bot.AdapterBinding{ID: id, Domain: strings.TrimSpace(conn.Domain), Platform: platform, Adapter: weixin.New(weixinCfg, logger)})
 			hasConnection[platform] = true
+		case bot.PlatformTelegram:
+			tgCfg := cfg.Bot.Telegram
+			tgCfg.Enabled = true
+			tgCfg.TokenEnv = firstNonEmptyString(strings.TrimSpace(conn.Credential.TokenEnv), tgCfg.TokenEnv)
+			bindings = append(bindings, bot.AdapterBinding{ID: id, Domain: strings.TrimSpace(conn.Domain), Platform: platform, Adapter: telegram.New(tgCfg, logger)})
+			hasConnection[platform] = true
 		}
 	}
 	if enabled[bot.PlatformQQ] && !hasConnection[bot.PlatformQQ] {
@@ -356,6 +373,9 @@ func AdapterBindings(cfg *config.Config, enabled map[bot.Platform]bool, feishuDo
 	}
 	if enabled[bot.PlatformWeixin] && !hasConnection[bot.PlatformWeixin] {
 		bindings = append(bindings, bot.AdapterBinding{ID: string(bot.PlatformWeixin), Domain: "weixin", Platform: bot.PlatformWeixin, Adapter: weixin.New(cfg.Bot.Weixin, logger)})
+	}
+	if enabled[bot.PlatformTelegram] && !hasConnection[bot.PlatformTelegram] {
+		bindings = append(bindings, bot.AdapterBinding{ID: string(bot.PlatformTelegram), Domain: "telegram", Platform: bot.PlatformTelegram, Adapter: telegram.New(cfg.Bot.Telegram, logger)})
 	}
 	return bindings
 }
@@ -389,9 +409,9 @@ func ModelName(cfg *config.Config, override string) string {
 }
 
 func AllowlistUserCount(a config.BotAllowlist) int {
-	return len(a.QQUsers) + len(a.FeishuUsers) + len(a.WeixinUsers) +
-		len(a.QQApprovers) + len(a.FeishuApprovers) + len(a.WeixinApprovers) +
-		len(a.QQAdmins) + len(a.FeishuAdmins) + len(a.WeixinAdmins)
+	return len(a.QQUsers) + len(a.FeishuUsers) + len(a.WeixinUsers) + len(a.TelegramUsers) +
+		len(a.QQApprovers) + len(a.FeishuApprovers) + len(a.WeixinApprovers) + len(a.TelegramApprovers) +
+		len(a.QQAdmins) + len(a.FeishuAdmins) + len(a.WeixinAdmins) + len(a.TelegramAdmins)
 }
 
 func BotAccessUserCount(access config.BotAccessConfig) int {
@@ -402,7 +422,7 @@ func BotConfigHasAccessControl(bc config.BotConfig) bool {
 	if bc.Allowlist.AllowAll || bc.Pairing.Enabled || (bc.Allowlist.Enabled && AllowlistUserCount(bc.Allowlist) > 0) {
 		return true
 	}
-	if BotAccessActive(bc.QQ.Access) {
+	if BotAccessActive(bc.QQ.Access) || BotAccessActive(bc.Telegram.Access) {
 		return true
 	}
 	for _, conn := range bc.Connections {
@@ -673,6 +693,8 @@ func rememberAllowlist(allowlist *config.BotAllowlist, platform bot.Platform, us
 			allowlist.FeishuUsers, changed = appendUniqueString(allowlist.FeishuUsers, userID)
 		case bot.PlatformWeixin:
 			allowlist.WeixinUsers, changed = appendUniqueString(allowlist.WeixinUsers, userID)
+		case bot.PlatformTelegram:
+			allowlist.TelegramUsers, changed = appendUniqueString(allowlist.TelegramUsers, userID)
 		}
 	}
 	if !chatUsesGroupAllowlist(chatType) {
@@ -690,6 +712,8 @@ func rememberAllowlist(allowlist *config.BotAllowlist, platform bot.Platform, us
 		allowlist.FeishuGroups, groupChanged = appendUniqueString(allowlist.FeishuGroups, groupID)
 	case bot.PlatformWeixin:
 		allowlist.WeixinGroups, groupChanged = appendUniqueString(allowlist.WeixinGroups, groupID)
+	case bot.PlatformTelegram:
+		allowlist.TelegramGroups, groupChanged = appendUniqueString(allowlist.TelegramGroups, groupID)
 	}
 	return changed || groupChanged
 }

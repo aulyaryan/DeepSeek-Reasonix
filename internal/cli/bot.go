@@ -47,7 +47,7 @@ func botCommand(args []string, version string) int {
 
 func botStart(args []string, version string) int {
 	fs := flag.NewFlagSet("bot start", flag.ContinueOnError)
-	channels := fs.String("channels", "", "启用的平台，逗号分隔：qq,feishu,lark,weixin")
+	channels := fs.String("channels", "", "启用的平台，逗号分隔：qq,feishu,lark,weixin,telegram")
 	dir := fs.String("dir", "", "工作目录")
 	model := fs.String("model", "", "模型名（空则用 default_model）")
 
@@ -108,9 +108,10 @@ func botStart(args []string, version string) int {
 		PairingMaxPending:  cfg.Bot.Pairing.MaxPendingPerPlatform,
 		IgnoreSelfMessages: cfg.Bot.IgnoreSelfMessages,
 		SelfUserIDs: map[bot.Platform][]string{
-			bot.PlatformQQ:     cfg.Bot.SelfUserIDs.QQ,
-			bot.PlatformFeishu: cfg.Bot.SelfUserIDs.Feishu,
-			bot.PlatformWeixin: cfg.Bot.SelfUserIDs.Weixin,
+			bot.PlatformQQ:       cfg.Bot.SelfUserIDs.QQ,
+			bot.PlatformFeishu:   cfg.Bot.SelfUserIDs.Feishu,
+			bot.PlatformWeixin:   cfg.Bot.SelfUserIDs.Weixin,
+			bot.PlatformTelegram: cfg.Bot.SelfUserIDs.Telegram,
 		},
 		ControlEnabled:     cfg.Bot.Control.Enabled,
 		ControlAddr:        cfg.Bot.Control.Addr,
@@ -125,24 +126,28 @@ func botStart(args []string, version string) int {
 			Enabled:  cfg.Bot.Allowlist.Enabled,
 			AllowAll: cfg.Bot.Allowlist.AllowAll,
 			Users: map[bot.Platform][]string{
-				bot.PlatformQQ:     cfg.Bot.Allowlist.QQUsers,
-				bot.PlatformFeishu: cfg.Bot.Allowlist.FeishuUsers,
-				bot.PlatformWeixin: cfg.Bot.Allowlist.WeixinUsers,
+				bot.PlatformQQ:       cfg.Bot.Allowlist.QQUsers,
+				bot.PlatformFeishu:   cfg.Bot.Allowlist.FeishuUsers,
+				bot.PlatformWeixin:   cfg.Bot.Allowlist.WeixinUsers,
+				bot.PlatformTelegram: cfg.Bot.Allowlist.TelegramUsers,
 			},
 			Approvers: map[bot.Platform][]string{
-				bot.PlatformQQ:     cfg.Bot.Allowlist.QQApprovers,
-				bot.PlatformFeishu: cfg.Bot.Allowlist.FeishuApprovers,
-				bot.PlatformWeixin: cfg.Bot.Allowlist.WeixinApprovers,
+				bot.PlatformQQ:       cfg.Bot.Allowlist.QQApprovers,
+				bot.PlatformFeishu:   cfg.Bot.Allowlist.FeishuApprovers,
+				bot.PlatformWeixin:   cfg.Bot.Allowlist.WeixinApprovers,
+				bot.PlatformTelegram: cfg.Bot.Allowlist.TelegramApprovers,
 			},
 			Admins: map[bot.Platform][]string{
-				bot.PlatformQQ:     cfg.Bot.Allowlist.QQAdmins,
-				bot.PlatformFeishu: cfg.Bot.Allowlist.FeishuAdmins,
-				bot.PlatformWeixin: cfg.Bot.Allowlist.WeixinAdmins,
+				bot.PlatformQQ:       cfg.Bot.Allowlist.QQAdmins,
+				bot.PlatformFeishu:   cfg.Bot.Allowlist.FeishuAdmins,
+				bot.PlatformWeixin:   cfg.Bot.Allowlist.WeixinAdmins,
+				bot.PlatformTelegram: cfg.Bot.Allowlist.TelegramAdmins,
 			},
 			Groups: map[bot.Platform][]string{
-				bot.PlatformQQ:     cfg.Bot.Allowlist.QQGroups,
-				bot.PlatformFeishu: cfg.Bot.Allowlist.FeishuGroups,
-				bot.PlatformWeixin: cfg.Bot.Allowlist.WeixinGroups,
+				bot.PlatformQQ:       cfg.Bot.Allowlist.QQGroups,
+				bot.PlatformFeishu:   cfg.Bot.Allowlist.FeishuGroups,
+				bot.PlatformWeixin:   cfg.Bot.Allowlist.WeixinGroups,
+				bot.PlatformTelegram: cfg.Bot.Allowlist.TelegramGroups,
 			},
 		},
 		Debounce:       time.Duration(cfg.Bot.DebounceMs) * time.Millisecond,
@@ -264,7 +269,7 @@ func botDoctor(args []string) int {
 			selfStatus = "enabled"
 		}
 		addCheck("bot.self_protection", selfStatus,
-			fmt.Sprintf("self_ids=%d", len(bc.SelfUserIDs.QQ)+len(bc.SelfUserIDs.Feishu)+len(bc.SelfUserIDs.Weixin)))
+			fmt.Sprintf("self_ids=%d", len(bc.SelfUserIDs.QQ)+len(bc.SelfUserIDs.Feishu)+len(bc.SelfUserIDs.Weixin)+len(bc.SelfUserIDs.Telegram)))
 		controlStatus := "disabled"
 		controlDetail := ""
 		if bc.Control.Enabled {
@@ -339,6 +344,22 @@ func botDoctor(args []string) int {
 		addCheck("bot.weixin", "disabled", "")
 	}
 
+	// Telegram 检查
+	if bc.Telegram.Enabled {
+		addCheck("bot.telegram.enabled", "ok", "")
+		token := os.Getenv(bc.Telegram.TokenEnv)
+		if token == "" {
+			addCheck("bot.telegram.token", "missing", bc.Telegram.TokenEnv+" is not set")
+		} else {
+			addCheck("bot.telegram.token", "ok", bc.Telegram.TokenEnv+" is set")
+		}
+		if len(bc.Telegram.AllowedUpdates) > 0 {
+			addCheck("bot.telegram.allowed_updates", "ok", strings.Join(bc.Telegram.AllowedUpdates, ","))
+		}
+	} else {
+		addCheck("bot.telegram", "disabled", "")
+	}
+
 	enabledConnections := 0
 	for _, conn := range bc.Connections {
 		if conn.Enabled {
@@ -366,12 +387,13 @@ func botDoctor(args []string) int {
 		addCheck("bot.allowlist", "open", "allow_all=true — every reachable user can trigger local tools")
 	} else if bc.Allowlist.Enabled {
 		addCheck("bot.allowlist", "enabled",
-			fmt.Sprintf("qq=%d feishu=%d weixin=%d users approvers=%d admins=%d",
+			fmt.Sprintf("qq=%d feishu=%d weixin=%d telegram=%d users approvers=%d admins=%d",
 				len(bc.Allowlist.QQUsers),
 				len(bc.Allowlist.FeishuUsers),
 				len(bc.Allowlist.WeixinUsers),
-				len(bc.Allowlist.QQApprovers)+len(bc.Allowlist.FeishuApprovers)+len(bc.Allowlist.WeixinApprovers),
-				len(bc.Allowlist.QQAdmins)+len(bc.Allowlist.FeishuAdmins)+len(bc.Allowlist.WeixinAdmins)))
+				len(bc.Allowlist.TelegramUsers),
+				len(bc.Allowlist.QQApprovers)+len(bc.Allowlist.FeishuApprovers)+len(bc.Allowlist.WeixinApprovers)+len(bc.Allowlist.TelegramApprovers),
+				len(bc.Allowlist.QQAdmins)+len(bc.Allowlist.FeishuAdmins)+len(bc.Allowlist.WeixinAdmins)+len(bc.Allowlist.TelegramAdmins)))
 	} else {
 		addCheck("bot.allowlist", "missing", "bot start will refuse without allowlist or allow_all=true")
 	}
@@ -528,13 +550,13 @@ func loadBotCommandConfig() (*config.Config, error) {
 }
 
 func botConfigIsUserOwned(bc config.BotConfig) bool {
-	if bc.Enabled || len(bc.Connections) > 0 || bc.QQ.Enabled || bc.Feishu.Enabled || bc.Weixin.Enabled {
+	if bc.Enabled || len(bc.Connections) > 0 || bc.QQ.Enabled || bc.Feishu.Enabled || bc.Weixin.Enabled || bc.Telegram.Enabled {
 		return true
 	}
 	if bc.Allowlist.AllowAll || botruntime.AllowlistUserCount(bc.Allowlist) > 0 {
 		return true
 	}
-	if botruntime.BotAccessActive(bc.QQ.Access) {
+	if botruntime.BotAccessActive(bc.QQ.Access) || botruntime.BotAccessActive(bc.Telegram.Access) {
 		return true
 	}
 	for _, conn := range bc.Connections {
@@ -542,16 +564,16 @@ func botConfigIsUserOwned(bc config.BotConfig) bool {
 			return true
 		}
 	}
-	return len(bc.Allowlist.QQGroups)+len(bc.Allowlist.FeishuGroups)+len(bc.Allowlist.WeixinGroups)+
-		len(bc.Allowlist.QQApprovers)+len(bc.Allowlist.FeishuApprovers)+len(bc.Allowlist.WeixinApprovers)+
-		len(bc.Allowlist.QQAdmins)+len(bc.Allowlist.FeishuAdmins)+len(bc.Allowlist.WeixinAdmins) > 0
+	return len(bc.Allowlist.QQGroups)+len(bc.Allowlist.FeishuGroups)+len(bc.Allowlist.WeixinGroups)+len(bc.Allowlist.TelegramGroups)+
+		len(bc.Allowlist.QQApprovers)+len(bc.Allowlist.FeishuApprovers)+len(bc.Allowlist.WeixinApprovers)+len(bc.Allowlist.TelegramApprovers)+
+		len(bc.Allowlist.QQAdmins)+len(bc.Allowlist.FeishuAdmins)+len(bc.Allowlist.WeixinAdmins)+len(bc.Allowlist.TelegramAdmins) > 0
 }
 
 func botUsage() {
-	fmt.Print(`reasonix bot — multi-channel IM bot gateway (QQ / Feishu / WeChat)
+	fmt.Print(`reasonix bot — multi-channel IM bot gateway (QQ / Feishu / WeChat / Telegram)
 
 Usage:
-  reasonix bot start   [--channels qq,feishu,lark,weixin] [--dir PATH] [--model NAME]
+  reasonix bot start   [--channels qq,feishu,lark,weixin,telegram] [--dir PATH] [--model NAME]
   reasonix bot doctor  [--json] [--deep]
   reasonix bot pairing list|approve|reject
   reasonix bot weixin-login [--timeout SECONDS]
@@ -576,6 +598,7 @@ Configuration:
     [bot.qq]         enabled / app_id / app_secret_env
     [bot.feishu]     enabled / app_id / app_secret_env / verification_token / mode
     [bot.weixin]     enabled / account_id / token_env / api_base
+    [bot.telegram]   enabled / token_env / allowed_updates
 
   All secrets are read from environment variables; never put keys in config files.
 `)

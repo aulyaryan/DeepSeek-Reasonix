@@ -11,9 +11,10 @@ import (
 type Platform string
 
 const (
-	PlatformQQ     Platform = "qq"
-	PlatformFeishu Platform = "feishu"
-	PlatformWeixin Platform = "weixin"
+	PlatformQQ       Platform = "qq"
+	PlatformFeishu   Platform = "feishu"
+	PlatformWeixin   Platform = "weixin"
+	PlatformTelegram Platform = "telegram"
 )
 
 // ChatType 标识会话类型。
