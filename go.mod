@@ -2,7 +2,7 @@ module reasonix
 
 go 1.25.0
 
-toolchain go1.26.5
+toolchain go1.25.12
 
 require (
 	charm.land/bubbles/v2 v2.1.0
@@ -15,6 +15,7 @@ require (
 	github.com/aymanbagabas/go-udiff v0.4.1
 	github.com/bmatcuk/doublestar/v4 v4.10.0
 	github.com/charmbracelet/x/ansi v0.11.7
+	github.com/go-telegram-bot-api/telegram-bot-api/v5 v5.5.1
 	github.com/joho/godotenv v1.5.1
 	github.com/larksuite/oapi-sdk-go/v3 v3.9.5
 	github.com/mattn/go-runewidth v0.0.24
