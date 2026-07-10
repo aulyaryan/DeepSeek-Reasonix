@@ -1,0 +1,21 @@
+name: Build CLI (Fork)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main-v2]
+
+jobs:
+  cli:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+          cache: true
+      - run: make cross
+      - uses: actions/upload-artifact@v7
+        with:
+          name: reasonix-cli-all
+          path: dist/*
