@@ -2425,6 +2425,13 @@ function BotsSection({ s, busy, apply, initialFocus }: BotsSectionProps) {
       setInstall({ target, result: null, status: "connected", timeLeft: 0, message: t("settings.botInstallAlreadyConnected", { provider: botTargetLabel(target, t) }) });
       return;
     }
+    // Telegram does not use QR-code install; connect directly via token config
+    if (target === "telegram") {
+      installAttemptRef.current += 1;
+      clearInstallTimers();
+      setInstall({ target, result: null, status: "connected", timeLeft: 0, message: t("settings.botTelegramHint") });
+      return;
+    }
     clearInstallTimers();
     const attempt = installAttemptRef.current + 1;
     installAttemptRef.current = attempt;
