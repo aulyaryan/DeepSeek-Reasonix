@@ -340,7 +340,7 @@ type HistoryViewState =
   | { kind: "history"; source: "scope"; filter: HistoryScopeFilter; sessions: SessionMeta[] }
   | { kind: "history"; source: "all"; sessions: SessionMeta[] }
   | { kind: "trash"; sessions: SessionMeta[] };
-type SidebarImPlatform = "qq" | "feishu" | "lark" | "weixin";
+type SidebarImPlatform = "qq" | "feishu" | "lark" | "weixin" | "telegram";
 type SidebarImStatus = "connected" | "disabled" | "pending" | "error" | "disconnected";
 type SidebarImConnection = {
   id: string;
@@ -411,6 +411,7 @@ function isSidebarImConnection(connection: BotConnectionView): boolean {
 
 function sidebarImPlatform(connection: BotConnectionView): SidebarImPlatform {
   if (connection.provider === "weixin") return "weixin";
+  if (connection.provider === "telegram") return "telegram";
   return connection.domain === "lark" ? "lark" : "feishu";
 }
 
@@ -481,6 +482,7 @@ function uniqueTrimmedValues(values: string[]): string[] {
 function sidebarImAllowlistUsers(bot: BotSettingsView, platform: SidebarImPlatform): string[] {
   if (platform === "qq") return uniqueTrimmedValues(asArray(bot.allowlist.qqUsers));
   if (platform === "weixin") return uniqueTrimmedValues(asArray(bot.allowlist.weixinUsers));
+  if (platform === "telegram") return uniqueTrimmedValues(asArray(bot.allowlist.telegramUsers));
   return uniqueTrimmedValues(asArray(bot.allowlist.feishuUsers));
 }
 
