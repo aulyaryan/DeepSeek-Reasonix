@@ -1,4 +1,4 @@
-name: Build & Release
+name: Release CLI Fork
 
 on:
   workflow_dispatch:
