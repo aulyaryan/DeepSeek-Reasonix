@@ -2210,7 +2210,6 @@ function BotsSection({ s, busy, apply, initialFocus }: BotsSectionProps) {
   const [accessText, setAccessText] = useState<Record<string, string>>({});
   const [qqSecretValue, setQQSecretValue] = useState("");
   const [tgTokenValue, setTgTokenValue] = useState("");
-  const [telegramUserIdsText, setTelegramUserIdsText] = useState(() => savedBot.allowlist.telegramUsers.join("\n"));
   const [expandedConnectionId, setExpandedConnectionId] = useState("");
   const [advancedMode, setAdvancedMode] = useState(false);
   const installRef = useRef(install);
@@ -2635,12 +2634,6 @@ function BotsSection({ s, busy, apply, initialFocus }: BotsSectionProps) {
     const nextDraft = botDraftWithDerivedGatewayState({
       ...draft,
       enabled: true,
-      allowlist: {
-        ...draft.allowlist,
-        telegramUsers: parseBotListInput(telegramUserIdsText),
-        enabled: true,
-        allowAll: telegramUserIdsText.trim().length === 0,
-      },
       connections: [
         ...draft.connections.filter((c) => c.id !== "telegram"),
         telegramConnection,
@@ -2652,12 +2645,6 @@ function BotsSection({ s, busy, apply, initialFocus }: BotsSectionProps) {
     });
     setDraft(nextDraft);
     setTgTokenValue("");
-  };
-  const persistTelegramUserIds = (value: string) => {
-    const ids = parseBotListInput(value);
-    const nextAllowlist = { ...draft.allowlist, telegramUsers: ids, enabled: true, allowAll: ids.length === 0 };
-    updateAllowlist(nextAllowlist);
-    void persistAllowlist(nextAllowlist);
   };
   const selectedQQ = isQQInstallTarget && qqAdded;
   const selectedConnection = isQQInstallTarget ? null : selectedInstallConnection ?? null;
@@ -3236,22 +3223,6 @@ function BotsSection({ s, busy, apply, initialFocus }: BotsSectionProps) {
                     spellCheck={false}
                     aria-label="Telegram Bot Token"
                     onChange={(event) => setTgTokenValue(event.target.value)}
-                  />
-                </div>
-              </div>
-              <div className="bot-card-field">
-                <span>{t("settings.botTelegramUsers")}</span>
-                <div>
-                  <textarea
-                    className="mem-input mem-input--textarea"
-                    rows={3}
-                    value={telegramUserIdsText}
-                    disabled={busy}
-                    placeholder={"123456789\n987654321"}
-                    spellCheck={false}
-                    aria-label={t("settings.botTelegramUsers")}
-                    onChange={(event) => setTelegramUserIdsText(event.target.value)}
-                    onBlur={(event) => void persistTelegramUserIds(event.currentTarget.value)}
                   />
                 </div>
               </div>
