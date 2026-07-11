@@ -54,6 +54,7 @@ jobs:
       - name: Windows deps
         if: runner.os == 'Windows'
         run: choco install nsis -y --no-progress
+        echo "C:\Program Files (x86)\NSIS" >> "$GITHUB_PATH"
       # macOS signing bypass
       - name: macOS ad-hoc sign
         if: runner.os == 'macOS'
