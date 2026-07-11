@@ -138,20 +138,24 @@ type AgentView struct {
 }
 
 type BotAllowlistView struct {
-	Enabled         bool     `json:"enabled"`
-	AllowAll        bool     `json:"allowAll"`
-	QQUsers         []string `json:"qqUsers"`
-	FeishuUsers     []string `json:"feishuUsers"`
-	WeixinUsers     []string `json:"weixinUsers"`
-	QQApprovers     []string `json:"qqApprovers"`
-	FeishuApprovers []string `json:"feishuApprovers"`
-	WeixinApprovers []string `json:"weixinApprovers"`
-	QQAdmins        []string `json:"qqAdmins"`
-	FeishuAdmins    []string `json:"feishuAdmins"`
-	WeixinAdmins    []string `json:"weixinAdmins"`
-	QQGroups        []string `json:"qqGroups"`
-	FeishuGroups    []string `json:"feishuGroups"`
-	WeixinGroups    []string `json:"weixinGroups"`
+	Enabled            bool     `json:"enabled"`
+	AllowAll           bool     `json:"allowAll"`
+	QQUsers            []string `json:"qqUsers"`
+	FeishuUsers        []string `json:"feishuUsers"`
+	WeixinUsers        []string `json:"weixinUsers"`
+	TelegramUsers      []string `json:"telegramUsers"`
+	QQApprovers        []string `json:"qqApprovers"`
+	FeishuApprovers    []string `json:"feishuApprovers"`
+	WeixinApprovers    []string `json:"weixinApprovers"`
+	TelegramApprovers  []string `json:"telegramApprovers"`
+	QQAdmins           []string `json:"qqAdmins"`
+	FeishuAdmins       []string `json:"feishuAdmins"`
+	WeixinAdmins       []string `json:"weixinAdmins"`
+	TelegramAdmins     []string `json:"telegramAdmins"`
+	QQGroups           []string `json:"qqGroups"`
+	FeishuGroups       []string `json:"feishuGroups"`
+	WeixinGroups       []string `json:"weixinGroups"`
+	TelegramGroups     []string `json:"telegramGroups"`
 }
 
 type BotAccessView struct {
@@ -165,9 +169,10 @@ type BotAccessView struct {
 }
 
 type BotSelfUserIDsView struct {
-	QQ     []string `json:"qq"`
-	Feishu []string `json:"feishu"`
-	Weixin []string `json:"weixin"`
+	QQ       []string `json:"qq"`
+	Feishu   []string `json:"feishu"`
+	Weixin   []string `json:"weixin"`
+	Telegram []string `json:"telegram"`
 }
 
 type BotPairingView struct {
@@ -924,9 +929,10 @@ func botSettingsView(b config.BotConfig) BotSettingsView {
 		QueueDrop:          b.QueueDrop,
 		IgnoreSelfMessages: b.IgnoreSelfMessages,
 		SelfUserIDs: BotSelfUserIDsView{
-			QQ:     nonNil(b.SelfUserIDs.QQ),
-			Feishu: nonNil(b.SelfUserIDs.Feishu),
-			Weixin: nonNil(b.SelfUserIDs.Weixin),
+			QQ:       nonNil(b.SelfUserIDs.QQ),
+			Feishu:   nonNil(b.SelfUserIDs.Feishu),
+			Weixin:   nonNil(b.SelfUserIDs.Weixin),
+			Telegram: nonNil(b.SelfUserIDs.Telegram),
 		},
 		Control: BotControlView{
 			Enabled:  b.Control.Enabled,
@@ -940,20 +946,24 @@ func botSettingsView(b config.BotConfig) BotSettingsView {
 		},
 		Routes: botRouteViews(b.Routes),
 		Allowlist: BotAllowlistView{
-			Enabled:         b.Allowlist.Enabled,
-			AllowAll:        b.Allowlist.AllowAll,
-			QQUsers:         nonNil(b.Allowlist.QQUsers),
-			FeishuUsers:     nonNil(b.Allowlist.FeishuUsers),
-			WeixinUsers:     nonNil(b.Allowlist.WeixinUsers),
-			QQApprovers:     nonNil(b.Allowlist.QQApprovers),
-			FeishuApprovers: nonNil(b.Allowlist.FeishuApprovers),
-			WeixinApprovers: nonNil(b.Allowlist.WeixinApprovers),
-			QQAdmins:        nonNil(b.Allowlist.QQAdmins),
-			FeishuAdmins:    nonNil(b.Allowlist.FeishuAdmins),
-			WeixinAdmins:    nonNil(b.Allowlist.WeixinAdmins),
-			QQGroups:        nonNil(b.Allowlist.QQGroups),
-			FeishuGroups:    nonNil(b.Allowlist.FeishuGroups),
-			WeixinGroups:    nonNil(b.Allowlist.WeixinGroups),
+			Enabled:            b.Allowlist.Enabled,
+			AllowAll:           b.Allowlist.AllowAll,
+			QQUsers:            nonNil(b.Allowlist.QQUsers),
+			FeishuUsers:        nonNil(b.Allowlist.FeishuUsers),
+			WeixinUsers:        nonNil(b.Allowlist.WeixinUsers),
+			TelegramUsers:      nonNil(b.Allowlist.TelegramUsers),
+			QQApprovers:        nonNil(b.Allowlist.QQApprovers),
+			FeishuApprovers:    nonNil(b.Allowlist.FeishuApprovers),
+			WeixinApprovers:    nonNil(b.Allowlist.WeixinApprovers),
+			TelegramApprovers:  nonNil(b.Allowlist.TelegramApprovers),
+			QQAdmins:           nonNil(b.Allowlist.QQAdmins),
+			FeishuAdmins:       nonNil(b.Allowlist.FeishuAdmins),
+			WeixinAdmins:       nonNil(b.Allowlist.WeixinAdmins),
+			TelegramAdmins:     nonNil(b.Allowlist.TelegramAdmins),
+			QQGroups:           nonNil(b.Allowlist.QQGroups),
+			FeishuGroups:       nonNil(b.Allowlist.FeishuGroups),
+			WeixinGroups:       nonNil(b.Allowlist.WeixinGroups),
+			TelegramGroups:     nonNil(b.Allowlist.TelegramGroups),
 		},
 		QQ: QQBotView{
 			Enabled:          b.QQ.Enabled,
@@ -1352,14 +1362,14 @@ func desktopBotConfigConfigured(bot config.BotConfig) bool {
 		(strings.TrimSpace(bot.Control.Addr) != "" && bot.Control.Addr != defaults.Control.Addr) ||
 		(strings.TrimSpace(bot.Control.TokenEnv) != "" && bot.Control.TokenEnv != defaults.Control.TokenEnv) ||
 		len(bot.Routes) > 0 ||
-		len(bot.SelfUserIDs.QQ)+len(bot.SelfUserIDs.Feishu)+len(bot.SelfUserIDs.Weixin) > 0 {
+		len(bot.SelfUserIDs.QQ)+len(bot.SelfUserIDs.Feishu)+len(bot.SelfUserIDs.Weixin)+len(bot.SelfUserIDs.Telegram) > 0 {
 		return true
 	}
 	if bot.Allowlist.AllowAll ||
-		len(bot.Allowlist.QQUsers)+len(bot.Allowlist.FeishuUsers)+len(bot.Allowlist.WeixinUsers) > 0 ||
-		len(bot.Allowlist.QQApprovers)+len(bot.Allowlist.FeishuApprovers)+len(bot.Allowlist.WeixinApprovers) > 0 ||
-		len(bot.Allowlist.QQAdmins)+len(bot.Allowlist.FeishuAdmins)+len(bot.Allowlist.WeixinAdmins) > 0 ||
-		len(bot.Allowlist.QQGroups)+len(bot.Allowlist.FeishuGroups)+len(bot.Allowlist.WeixinGroups) > 0 {
+		len(bot.Allowlist.QQUsers)+len(bot.Allowlist.FeishuUsers)+len(bot.Allowlist.WeixinUsers)+len(bot.Allowlist.TelegramUsers) > 0 ||
+		len(bot.Allowlist.QQApprovers)+len(bot.Allowlist.FeishuApprovers)+len(bot.Allowlist.WeixinApprovers)+len(bot.Allowlist.TelegramApprovers) > 0 ||
+		len(bot.Allowlist.QQAdmins)+len(bot.Allowlist.FeishuAdmins)+len(bot.Allowlist.WeixinAdmins)+len(bot.Allowlist.TelegramAdmins) > 0 ||
+		len(bot.Allowlist.QQGroups)+len(bot.Allowlist.FeishuGroups)+len(bot.Allowlist.WeixinGroups)+len(bot.Allowlist.TelegramGroups) > 0 {
 		return true
 	}
 	if bot.QQ.Enabled ||
@@ -2723,9 +2733,10 @@ func (a *App) SetBotSettings(b BotSettingsView) error {
 		c.Bot.QueueDrop = strings.TrimSpace(b.QueueDrop)
 		c.Bot.IgnoreSelfMessages = b.IgnoreSelfMessages
 		c.Bot.SelfUserIDs = config.BotSelfUserIDs{
-			QQ:     trimList(b.SelfUserIDs.QQ),
-			Feishu: trimList(b.SelfUserIDs.Feishu),
-			Weixin: trimList(b.SelfUserIDs.Weixin),
+			QQ:       trimList(b.SelfUserIDs.QQ),
+			Feishu:   trimList(b.SelfUserIDs.Feishu),
+			Weixin:   trimList(b.SelfUserIDs.Weixin),
+			Telegram: trimList(b.SelfUserIDs.Telegram),
 		}
 		c.Bot.Control = config.BotControlConfig{
 			Enabled:  b.Control.Enabled,
@@ -2739,20 +2750,24 @@ func (a *App) SetBotSettings(b BotSettingsView) error {
 		}
 		c.Bot.Routes = botRouteConfigs(b.Routes)
 		c.Bot.Allowlist = config.BotAllowlist{
-			Enabled:         b.Allowlist.Enabled,
-			AllowAll:        b.Allowlist.AllowAll,
-			QQUsers:         trimList(b.Allowlist.QQUsers),
-			FeishuUsers:     trimList(b.Allowlist.FeishuUsers),
-			WeixinUsers:     trimList(b.Allowlist.WeixinUsers),
-			QQApprovers:     trimList(b.Allowlist.QQApprovers),
-			FeishuApprovers: trimList(b.Allowlist.FeishuApprovers),
-			WeixinApprovers: trimList(b.Allowlist.WeixinApprovers),
-			QQAdmins:        trimList(b.Allowlist.QQAdmins),
-			FeishuAdmins:    trimList(b.Allowlist.FeishuAdmins),
-			WeixinAdmins:    trimList(b.Allowlist.WeixinAdmins),
-			QQGroups:        trimList(b.Allowlist.QQGroups),
-			FeishuGroups:    trimList(b.Allowlist.FeishuGroups),
-			WeixinGroups:    trimList(b.Allowlist.WeixinGroups),
+			Enabled:            b.Allowlist.Enabled,
+			AllowAll:           b.Allowlist.AllowAll,
+			QQUsers:            trimList(b.Allowlist.QQUsers),
+			FeishuUsers:        trimList(b.Allowlist.FeishuUsers),
+			WeixinUsers:        trimList(b.Allowlist.WeixinUsers),
+			TelegramUsers:      trimList(b.Allowlist.TelegramUsers),
+			QQApprovers:        trimList(b.Allowlist.QQApprovers),
+			FeishuApprovers:    trimList(b.Allowlist.FeishuApprovers),
+			WeixinApprovers:    trimList(b.Allowlist.WeixinApprovers),
+			TelegramApprovers:  trimList(b.Allowlist.TelegramApprovers),
+			QQAdmins:           trimList(b.Allowlist.QQAdmins),
+			FeishuAdmins:       trimList(b.Allowlist.FeishuAdmins),
+			WeixinAdmins:       trimList(b.Allowlist.WeixinAdmins),
+			TelegramAdmins:     trimList(b.Allowlist.TelegramAdmins),
+			QQGroups:           trimList(b.Allowlist.QQGroups),
+			FeishuGroups:       trimList(b.Allowlist.FeishuGroups),
+			WeixinGroups:       trimList(b.Allowlist.WeixinGroups),
+			TelegramGroups:     trimList(b.Allowlist.TelegramGroups),
 		}
 		c.Bot.QQ = config.QQBotConfig{
 			Enabled:          b.QQ.Enabled,

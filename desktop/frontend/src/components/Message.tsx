@@ -61,6 +61,7 @@ function imSourceLabel(source: ImSourceMessage, t: ReturnType<typeof useT>): str
   const provider = source.provider.trim().toLowerCase();
   if (provider === "lark") return "Lark";
   if (provider === "weixin" || provider === "wechat") return t("settings.botWeixin");
+  if (provider === "telegram") return "Telegram";
   return t("settings.botFeishu");
 }
 

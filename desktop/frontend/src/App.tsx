@@ -418,6 +418,7 @@ function sidebarImPlatformLabel(platform: SidebarImPlatform, translate: Translat
   if (platform === "qq") return "QQ";
   if (platform === "lark") return "Lark";
   if (platform === "weixin") return translate("settings.botWeixin");
+  if (platform === "telegram") return "Telegram";
   return translate("settings.botFeishu");
 }
 

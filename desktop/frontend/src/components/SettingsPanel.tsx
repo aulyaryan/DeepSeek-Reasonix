@@ -3508,6 +3508,14 @@ function BotsSection({ s, busy, apply, initialFocus }: BotsSectionProps) {
                     onChange={(value) => updateSelfUserText("weixin", value)}
                     onBlur={(value) => persistSelfUserText("weixin", value)}
                   />
+                  <BotListInput
+                    label={t("settings.botTelegramUsers")}
+                    value={selfUserText.telegram}
+                    disabled={busy}
+                    placeholder={t("settings.botListPlaceholder")}
+                    onChange={(value) => updateSelfUserText("telegram", value)}
+                    onBlur={(value) => persistSelfUserText("telegram", value)}
+                  />
                 </div>
               </SettingsField>
               <SettingsField label={t("settings.botPairing")} hint={t("settings.botPairingDetailHint")}>
@@ -3595,6 +3603,7 @@ function BotsSection({ s, busy, apply, initialFocus }: BotsSectionProps) {
                             <option value="qq">QQ</option>
                             <option value="feishu">{t("settings.botFeishu")}</option>
                             <option value="weixin">{t("settings.botWeixin")}</option>
+                            <option value="telegram">Telegram</option>
                           </select>
                         </label>
                         <label>
@@ -3719,6 +3728,7 @@ function botTargetLabel(target: BotInstallTarget, t: ReturnType<typeof useT>): s
     case "qq": return "QQ";
     case "lark": return "Lark";
     case "weixin": return t("settings.botWeixin");
+    case "telegram": return "Telegram";
     default: return t("settings.botFeishu");
   }
 }
@@ -3781,6 +3791,7 @@ function botConnectionLabel(connection: BotConnectionView, t: ReturnType<typeof 
   if (connection.domain === "lark") return "Lark";
   if (connection.provider === "weixin") return t("settings.botWeixin");
   if (connection.provider === "qq") return "QQ";
+  if (connection.provider === "telegram") return "Telegram";
   return t("settings.botFeishu");
 }
 
@@ -5458,6 +5469,7 @@ function botSelfUserTextValues(selfUserIds: BotSettingsView["selfUserIds"]): Rec
     qq: selfUserIds.qq.join("\n"),
     feishu: selfUserIds.feishu.join("\n"),
     weixin: selfUserIds.weixin.join("\n"),
+    telegram: selfUserIds.telegram.join("\n"),
   };
 }
 
