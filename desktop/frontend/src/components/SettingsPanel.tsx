@@ -2121,21 +2121,25 @@ function NetworkSection({ s, busy, apply }: SectionProps) {
   );
 }
 
-type BotInstallTarget = "qq" | "feishu" | "lark" | "weixin";
+type BotInstallTarget = "qq" | "feishu" | "lark" | "weixin" | "telegram";
 type BotOfficialInstallTarget = Exclude<BotInstallTarget, "qq">;
 const BOT_ALLOWLIST_TEXT_KEYS = [
   "qqUsers",
   "feishuUsers",
   "weixinUsers",
+  "telegramUsers",
   "qqApprovers",
   "feishuApprovers",
   "weixinApprovers",
+  "telegramApprovers",
   "qqAdmins",
   "feishuAdmins",
   "weixinAdmins",
+  "telegramAdmins",
   "qqGroups",
   "feishuGroups",
   "weixinGroups",
+  "telegramGroups",
 ] as const;
 type BotAllowlistTextKey = typeof BOT_ALLOWLIST_TEXT_KEYS[number];
 type BotSelfUserTextKey = keyof BotSettingsView["selfUserIds"];
@@ -2146,12 +2150,12 @@ type BotInstallState = {
   timeLeft: number;
   message: string;
 };
-const BOT_INSTALL_TARGETS: BotInstallTarget[] = ["qq", "feishu", "lark", "weixin"];
+const BOT_INSTALL_TARGETS: BotInstallTarget[] = ["qq", "feishu", "lark", "weixin", "telegram"];
 const BOT_INSTALL_DEFAULT_TIMEOUT_SECONDS = 300;
 const BOT_INSTALL_MIN_POLL_SECONDS = 3;
 const DEFAULT_QQ_SECRET_ENV = "QQ_BOT_APP_SECRET";
 const QQ_CONNECTION_ID = "__qq_bot__";
-const BOT_PLATFORM_KEYS = ["qq", "feishu", "weixin"] as const;
+const BOT_PLATFORM_KEYS = ["qq", "feishu", "weixin", "telegram"] as const;
 type BotPlatformKey = typeof BOT_PLATFORM_KEYS[number];
 const BOT_ALLOWLIST_ROLES = ["Users", "Groups", "Approvers", "Admins"] as const;
 type BotAllowlistRole = typeof BOT_ALLOWLIST_ROLES[number];
@@ -2164,12 +2168,14 @@ function botAllowlistKey(platform: BotPlatformKey, role: BotAllowlistRole): BotA
 function botConnectionPlatform(connection: BotConnectionView): BotPlatformKey {
   if (connection.provider === "weixin") return "weixin";
   if (connection.provider === "qq") return "qq";
+  if (connection.provider === "telegram") return "telegram";
   return "feishu";
 }
 
 function botPlatformLabel(platform: BotPlatformKey, t: ReturnType<typeof useT>): string {
   if (platform === "qq") return "QQ";
   if (platform === "weixin") return t("settings.botWeixin");
+  if (platform === "telegram") return "Telegram";
   return t("settings.botPlatformFeishuLark");
 }
 
@@ -3738,6 +3744,7 @@ function botTargetHint(target: BotInstallTarget, t: ReturnType<typeof useT>): st
     case "qq": return t("settings.botInstallQQHint");
     case "lark": return t("settings.botInstallLarkHint");
     case "weixin": return t("settings.botInstallWeixinHint");
+    case "telegram": return t("settings.botTelegramHint");
     default: return t("settings.botInstallFeishuHint");
   }
 }
@@ -3771,6 +3778,7 @@ function botInstallTargetForConnection(connection: BotConnectionView): BotInstal
   if (connection.provider === "weixin") return "weixin";
   if (connection.provider === "feishu" && connection.domain === "lark") return "lark";
   if (connection.provider === "qq") return "qq";
+  if (connection.provider === "telegram") return "telegram";
   return "feishu";
 }
 
@@ -5452,15 +5460,19 @@ function botAllowlistTextValues(allowlist: BotAllowlistView): Record<BotAllowlis
     qqUsers: allowlist.qqUsers.join("\n"),
     feishuUsers: allowlist.feishuUsers.join("\n"),
     weixinUsers: allowlist.weixinUsers.join("\n"),
+    telegramUsers: allowlist.telegramUsers.join("\n"),
     qqApprovers: allowlist.qqApprovers.join("\n"),
     feishuApprovers: allowlist.feishuApprovers.join("\n"),
     weixinApprovers: allowlist.weixinApprovers.join("\n"),
+    telegramApprovers: allowlist.telegramApprovers.join("\n"),
     qqAdmins: allowlist.qqAdmins.join("\n"),
     feishuAdmins: allowlist.feishuAdmins.join("\n"),
     weixinAdmins: allowlist.weixinAdmins.join("\n"),
+    telegramAdmins: allowlist.telegramAdmins.join("\n"),
     qqGroups: allowlist.qqGroups.join("\n"),
     feishuGroups: allowlist.feishuGroups.join("\n"),
     weixinGroups: allowlist.weixinGroups.join("\n"),
+    telegramGroups: allowlist.telegramGroups.join("\n"),
   };
 }
 

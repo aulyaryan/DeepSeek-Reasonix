@@ -992,15 +992,19 @@ export interface BotAllowlistView {
   qqUsers: string[];
   feishuUsers: string[];
   weixinUsers: string[];
+  telegramUsers: string[];
   qqApprovers: string[];
   feishuApprovers: string[];
   weixinApprovers: string[];
+  telegramApprovers: string[];
   qqAdmins: string[];
   feishuAdmins: string[];
   weixinAdmins: string[];
+  telegramAdmins: string[];
   qqGroups: string[];
   feishuGroups: string[];
   weixinGroups: string[];
+  telegramGroups: string[];
 }
 
 export interface BotAccessView {
@@ -1017,6 +1021,7 @@ export interface BotSelfUserIDsView {
   qq: string[];
   feishu: string[];
   weixin: string[];
+  telegram: string[];
 }
 
 export interface BotPairingView {
