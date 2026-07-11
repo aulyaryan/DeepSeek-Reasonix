@@ -1,0 +1,119 @@
+name: Build & Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag version (e.g. v1.0.0)'
+        required: true
+        type: string
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-cli:
+    name: Build CLI (${{ matrix.platform }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - goos: linux
+            goarch: amd64
+            platform: linux-amd64
+          - goos: linux
+            goarch: arm64
+            platform: linux-arm64
+          - goos: darwin
+            goarch: amd64
+            platform: darwin-amd64
+          - goos: darwin
+            goarch: arm64
+            platform: darwin-arm64
+          - goos: windows
+            goarch: amd64
+            platform: windows-amd64
+          - goos: windows
+            goarch: arm64
+            platform: windows-arm64
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Build
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+        run: |
+          EXT=""
+          [ "$GOOS" = "windows" ] && EXT=".exe"
+          CGO_ENABLED=0 go build -ldflags "-s -w -X main.version=${{ github.ref_name }}" \
+            -o "dist/reasonix-${{ matrix.platform }}$EXT" ./cmd/reasonix
+
+      - name: Package
+        run: |
+          cd dist
+          case "${{ matrix.goos }}" in
+            windows) zip "reasonix-${{ matrix.platform }}.zip" "reasonix-${{ matrix.platform }}.exe" ;;
+            *) tar czf "reasonix-${{ matrix.platform }}.tar.gz" "reasonix-${{ matrix.platform }}" ;;
+          esac
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: release-${{ matrix.platform }}
+          path: dist/reasonix-${{ matrix.platform }}.*
+
+  release:
+    name: Create Release
+    needs: build-cli
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/download-artifact@v8
+        with:
+          path: assets
+          pattern: release-*
+          merge-multiple: true
+
+      - name: Determine tag
+        id: tag
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "tag=${{ inputs.tag }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Generate SHA256SUMS
+        run: |
+          cd assets
+          sha256sum * > SHA256SUMS
+          cat SHA256SUMS
+
+      - name: Create Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="${{ steps.tag.outputs.tag }}"
+          echo "Creating release: $TAG"
+
+          # Create the release (idempotent)
+          gh release create "$TAG" \
+            --title "Reasonix CLI $TAG" \
+            --generate-notes \
+            --repo "${{ github.repository }}" || true
+
+          # Upload all assets
+          gh release upload "$TAG" assets/* \
+            --clobber \
+            --repo "${{ github.repository }}"
