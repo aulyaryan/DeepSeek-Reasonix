@@ -1,4 +1,4 @@
-name: Release Desktop
+name: Release Desktop Fork
 
 on:
   workflow_dispatch:
