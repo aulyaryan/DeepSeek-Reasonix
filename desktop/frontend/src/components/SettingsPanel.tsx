@@ -2209,6 +2209,7 @@ function BotsSection({ s, busy, apply, initialFocus }: BotsSectionProps) {
   const [connectionSecrets, setConnectionSecrets] = useState<Record<string, string>>({});
   const [accessText, setAccessText] = useState<Record<string, string>>({});
   const [qqSecretValue, setQQSecretValue] = useState("");
+  const [tgTokenValue, setTgTokenValue] = useState("");
   const [expandedConnectionId, setExpandedConnectionId] = useState("");
   const [advancedMode, setAdvancedMode] = useState(false);
   const installRef = useRef(install);
@@ -2364,6 +2365,7 @@ function BotsSection({ s, busy, apply, initialFocus }: BotsSectionProps) {
   const installQrURL = install.result?.url ?? "";
   const installQrIsImage = installQrURL.startsWith("data:image/");
   const isQQInstallTarget = installTarget === "qq";
+  const isTelegramInstallTarget = installTarget === "telegram";
   const selectedInstallLabel = botTargetLabel(installTarget, t);
   const installUserCode = install.result?.userCode && installTarget !== "weixin" ? formatInstallUserCode(install.result.userCode) : "";
   const qqSecretEnv = draft.qq.appSecretEnv.trim() || DEFAULT_QQ_SECRET_ENV;
@@ -2371,6 +2373,7 @@ function BotsSection({ s, busy, apply, initialFocus }: BotsSectionProps) {
   const qqCanEnableAccess = botAccessReady(draft.qq.access);
   const qqCanSaveAndEnable = Boolean(draft.qq.appId.trim() && qqSecretEnv && (draft.qq.secretSet || qqSecretValue.trim()) && qqCanEnableAccess);
   const qqAdded = qqBotAdded(draft.qq);
+  const tgCanSaveAndEnable = Boolean(tgTokenValue.trim());
   const nativeRuntimeAvailable = typeof window !== "undefined" && Boolean(window.runtime);
   const browserPreviewBotConfigured = !nativeRuntimeAvailable && (qqAdded || draft.connections.length > 0);
   const qqOnline = qqConfigured && nativeRuntimeAvailable;
@@ -2423,13 +2426,6 @@ function BotsSection({ s, busy, apply, initialFocus }: BotsSectionProps) {
       installAttemptRef.current += 1;
       clearInstallTimers();
       setInstall({ target, result: null, status: "connected", timeLeft: 0, message: t("settings.botInstallAlreadyConnected", { provider: botTargetLabel(target, t) }) });
-      return;
-    }
-    // Telegram does not use QR-code install; connect directly via token config
-    if (target === "telegram") {
-      installAttemptRef.current += 1;
-      clearInstallTimers();
-      setInstall({ target, result: null, status: "connected", timeLeft: 0, message: t("settings.botTelegramHint") });
       return;
     }
     clearInstallTimers();
@@ -2614,6 +2610,16 @@ function BotsSection({ s, busy, apply, initialFocus }: BotsSectionProps) {
     setDraft(nextDraft);
     setQQSecretValue("");
     setExpandedConnectionId("");
+  };
+  const saveTelegramAndEnable = async () => {
+    const token = tgTokenValue.trim();
+    if (!token) return;
+    await apply(async () => {
+      await app.SetBotSecret("TG_BOT_TOKEN", token);
+    });
+    setTgTokenValue("");
+    setInstallTarget("feishu"); // switch away so user sees connected state
+    setInstallTarget("telegram");
   };
   const selectedQQ = isQQInstallTarget && qqAdded;
   const selectedConnection = isQQInstallTarget ? null : selectedInstallConnection ?? null;
@@ -3161,6 +3167,45 @@ function BotsSection({ s, busy, apply, initialFocus }: BotsSectionProps) {
                 </button>
               </div>
               {!qqCanEnableAccess ? <div className="bot-connect-panel__hint bot-connect-panel__hint--warning">{t("settings.botQQAccessRequired")}</div> : null}
+            </div>
+          </div>
+        </div>
+      ) : isTelegramInstallTarget ? (
+        <div className="bot-connect-panel bot-connect-panel--manual bot-connect-panel--telegram">
+          <div className="bot-connect-panel__body">
+            <div className="bot-qq-simple__head">
+              <div>
+                <strong>{selectedInstallLabel}</strong>
+                <p>{t("settings.botTelegramHint")}</p>
+              </div>
+            </div>
+            <div className="bot-manual-form">
+              <p>{t("settings.botTelegramManualDesc")}</p>
+              <ol className="bot-telegram-steps">
+                <li>{t("settings.botTelegramStep1")}</li>
+                <li>{t("settings.botTelegramStep2")}</li>
+                <li>{t("settings.botTelegramStep3")}</li>
+              </ol>
+              <div className="bot-card-field">
+                <span>Token</span>
+                <div>
+                  <input
+                    className="mem-input"
+                    type="password"
+                    value={tgTokenValue}
+                    disabled={busy}
+                    placeholder="123456:ABC-def_ghi"
+                    spellCheck={false}
+                    aria-label="Telegram Bot Token"
+                    onChange={(event) => setTgTokenValue(event.target.value)}
+                  />
+                </div>
+              </div>
+              <div className="bot-qq-simple__actions">
+                <button type="button" className="btn btn--primary btn--small" disabled={busy || !tgCanSaveAndEnable} onClick={() => void saveTelegramAndEnable()}>
+                  {t("settings.botSaveAndEnable")}
+                </button>
+              </div>
             </div>
           </div>
         </div>
